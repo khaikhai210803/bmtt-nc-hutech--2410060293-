@@ -1,22 +1,21 @@
 import sys
-from pathlib import Path
 
-from PyQt5 import uic
 from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox
 
 from api_client import APIClientError, request_json
+from ui.rsa import Ui_RSAMainWindow
 
 
 class RSAWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
-        form_path = Path(__file__).resolve().parent / "ui" / "rsa.ui"
-        uic.loadUi(str(form_path), self)
-        self.btn_gen_keys.clicked.connect(self.generate_keys)
-        self.btn_encrypt.clicked.connect(self.encrypt_message)
-        self.btn_decrypt.clicked.connect(self.decrypt_message)
-        self.btn_sign.clicked.connect(self.sign_message)
-        self.btn_verify.clicked.connect(self.verify_signature)
+        self.ui = Ui_RSAMainWindow()
+        self.ui.setupUi(self)
+        self.ui.btn_gen_keys.clicked.connect(self.generate_keys)
+        self.ui.btn_encrypt.clicked.connect(self.encrypt_message)
+        self.ui.btn_decrypt.clicked.connect(self.decrypt_message)
+        self.ui.btn_sign.clicked.connect(self.sign_message)
+        self.ui.btn_verify.clicked.connect(self.verify_signature)
 
     def _request(self, method: str, path: str, **kwargs: object) -> dict[str, object] | None:
         try:
@@ -35,41 +34,41 @@ class RSAWindow(QMainWindow):
             "POST",
             "/api/rsa/encrypt",
             json={
-                "message": self.txt_plain_text.toPlainText(),
+                "message": self.ui.txt_plain_text.toPlainText(),
                 "key_type": "public",
             },
         )
         if result is not None:
-            self.txt_cipher_text.setPlainText(str(result["encrypted_message"]))
+            self.ui.txt_cipher_text.setPlainText(str(result["encrypted_message"]))
 
     def decrypt_message(self) -> None:
         result = self._request(
             "POST",
             "/api/rsa/decrypt",
             json={
-                "ciphertext": self.txt_cipher_text.toPlainText(),
+                "ciphertext": self.ui.txt_cipher_text.toPlainText(),
                 "key_type": "private",
             },
         )
         if result is not None:
-            self.txt_plain_text.setPlainText(str(result["decrypted_message"]))
+            self.ui.txt_plain_text.setPlainText(str(result["decrypted_message"]))
 
     def sign_message(self) -> None:
         result = self._request(
             "POST",
             "/api/rsa/sign",
-            json={"message": self.txt_info.toPlainText()},
+            json={"message": self.ui.txt_info.toPlainText()},
         )
         if result is not None:
-            self.txt_sign.setPlainText(str(result["signature"]))
+            self.ui.txt_sign.setPlainText(str(result["signature"]))
 
     def verify_signature(self) -> None:
         result = self._request(
             "POST",
             "/api/rsa/verify",
             json={
-                "message": self.txt_info.toPlainText(),
-                "signature": self.txt_sign.toPlainText(),
+                "message": self.ui.txt_info.toPlainText(),
+                "signature": self.ui.txt_sign.toPlainText(),
             },
         )
         if result is None:
