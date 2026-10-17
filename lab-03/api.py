@@ -30,52 +30,6 @@ def _keys_or_error():
         return None, _error("Generate RSA keys first.", 409)
 
 
-@app.post("/api/caesar/encrypt")
-def caesar_encrypt():
-    data = _payload()
-    if data is None:
-        return _error("A JSON object is required.")
-
-    plain_text = _string_field(data, "plain_text")
-    key = data.get("key")
-    if plain_text is None:
-        return _error("'plain_text' must be a string.")
-    if isinstance(key, bool) or not isinstance(key, int):
-        return _error("'key' must be an integer.")
-
-    alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    encrypted = "".join(
-        alphabet[(alphabet.index(char) + key) % len(alphabet)]
-        if char in alphabet
-        else char
-        for char in plain_text.upper()
-    )
-    return jsonify({"encrypted_message": encrypted})
-
-
-@app.post("/api/caesar/decrypt")
-def caesar_decrypt():
-    data = _payload()
-    if data is None:
-        return _error("A JSON object is required.")
-
-    cipher_text = _string_field(data, "cipher_text")
-    key = data.get("key")
-    if cipher_text is None:
-        return _error("'cipher_text' must be a string.")
-    if isinstance(key, bool) or not isinstance(key, int):
-        return _error("'key' must be an integer.")
-
-    alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    decrypted = "".join(
-        alphabet[(alphabet.index(char) - key) % len(alphabet)]
-        if char in alphabet
-        else char
-        for char in cipher_text.upper()
-    )
-    return jsonify({"decrypted_message": decrypted})
-
-
 @app.get("/api/rsa/generate_keys")
 def rsa_generate_keys():
     rsa_cipher.generate_keys()

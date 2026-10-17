@@ -18,29 +18,6 @@ class Lab03APITests(unittest.TestCase):
         api.rsa_cipher = self.original_cipher
         self.keys_directory.cleanup()
 
-    def test_caesar_encrypt_and_decrypt(self) -> None:
-        encrypted = self.client.post(
-            "/api/caesar/encrypt",
-            json={"plain_text": "Attack at dawn!", "key": 3},
-        )
-        self.assertEqual(encrypted.status_code, 200)
-        self.assertEqual(encrypted.json["encrypted_message"], "DWWDFN DW GDZQ!")
-
-        decrypted = self.client.post(
-            "/api/caesar/decrypt",
-            json={"cipher_text": encrypted.json["encrypted_message"], "key": 3},
-        )
-        self.assertEqual(decrypted.status_code, 200)
-        self.assertEqual(decrypted.json["decrypted_message"], "ATTACK AT DAWN!")
-
-    def test_caesar_rejects_invalid_key(self) -> None:
-        response = self.client.post(
-            "/api/caesar/encrypt",
-            json={"plain_text": "HELLO", "key": "3"},
-        )
-        self.assertEqual(response.status_code, 400)
-        self.assertIn("integer", response.json["error"])
-
     def test_rsa_encrypt_decrypt_sign_and_verify(self) -> None:
         generated = self.client.get("/api/rsa/generate_keys")
         self.assertEqual(generated.status_code, 200)
